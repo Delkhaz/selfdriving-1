@@ -23,11 +23,13 @@ def get_image():
 while True:
 	im = get_image()
 	#im.show()	
-
-	# trying to display image via PIL instead.
-	# currently not working
-	im_PIL = Image.new("RGB", (480,640), "white")
-	im_PIL.putdata(im)
-	im_PIL.show()
-	#cv2.imshow('ImageWindow', im)
+	# create NumPy arrays from the boundaries
+	lower = np.array([0,0,80], dtype = "uint8")
+	upper = np.array([50,50,255], dtype = "uint8")
+	# find the colors within the specified boundaries and apply
+	# the mask
+	mask = cv2.inRange(image, lower, upper)
+	output = cv2.bitwise_and(image, image, mask = mask)
+	# show the images
+	cv2.imshow("images", np.hstack([image, output]))
 	cv2.waitKey(0)
