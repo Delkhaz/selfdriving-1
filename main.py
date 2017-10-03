@@ -26,8 +26,7 @@ while True:
 	output = cv2.bitwise_and(image, image, mask = mask)
 	gray = cv2.cvtColor(output, cv2.COLOR_HSV2BGR)
 	gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
-	_, thresh = cv2.threshold(gray, 127,255,0)
-	thresh = cv2.inpaint(thresh,cv2.bitwise_not(cv2.bitwise_xor(thresh, thresh)),3,cv2.INPAINT_TELEA)
+	_, thresh = cv2.threshold(gray, 127,255,0, cv2.THRESH_TOZERO)
 	_,contours,h = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 	# show the images
 	for cnt in contours:
@@ -35,8 +34,8 @@ while True:
 		if num_sides >= 7 and num_sides <= 10:
 			cv2.drawContours(output, [cnt], 0, 255, -1)
 	#cv2.drawContours(output, contours, -1, (0,255,0), 3)
-	cv2.imshow("images", thresh)
 	#cv2.imshow("images", np.hstack([image, output]))
+	cv2.imshow("images", np.hstack([image, output]))
 	# Break the esc loop
 	if cv2.waitKey() == ESC_KEY:
 		break
