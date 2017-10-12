@@ -62,8 +62,8 @@ void setup()
   rightMotor.begin();
   leftMotor.begin();
   Serial.begin(9600);
-  uint16_t rightSpeed = 0;
-  uint16_t leftSpeed = 0;
+  int16_t rightSpeed = 0;
+  int16_t leftSpeed = 0;
 
 }
 
@@ -109,8 +109,21 @@ void loop()
       Serial.println(rightSpeed);
       Serial.println(" ");
       Serial.println(leftSpeed);*/
-    rightMotor.runSpeed(rightSpeed);
-    leftMotor.runSpeed(leftSpeed);
+      if (rightSpeed == 0 && leftSpeed == 0) {
+        rightMotor.reset();
+        leftMotor.reset();
+
+          /**
+          rightMotor.runSpeed(0.0);
+          leftMotor.runSpeed(0.0);
+          */
+      }
+     else {
+    float normalizedRightSpeed = -((float)rightSpeed * 100.0 / 32768.0);
+    float normalizedLeftSpeed = ((float)leftSpeed * 100.0 / 32768.0);
+    rightMotor.runSpeed(normalizedRightSpeed);
+    leftMotor.runSpeed(normalizedLeftSpeed);
+     }
     speedUpdate = false;
   }
 
