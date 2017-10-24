@@ -9,16 +9,33 @@ main.py will manage the image capture and instruction set
 
 
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from serial import *
+from struct import *
 import time
+
+seriaL = Serial('/dev/ttyUSB0', 9600)
+time.sleep(2)
+
+# Sends RPM (number) and wheel instructions to arduino
+def SetWheels(opCode, number):
+    message = pack('Bh',ord(opCode),number)
+    seriaL.write(message)
+
+def StopWheels():
+    message = pack('B',ord('S'))
+    seriaL.write(message)
+
 ESC_KEY = 27
 
 # init camera
 camera = cv2.VideoCapture(0)
 
 state = "forward"
-speed = 100
+MAX_SPEED = 1000
+SPEED_STEP = 50
+speed = MAX_SPEED
 
 while True:
 	if state == "forward":
@@ -43,26 +60,24 @@ while True:
 				if area >= 1250:
 					cv2.drawContours(output, [cnt], 0, (0,255,0), -1)
 					center = tuple(np.mean(cnt, axis=0)[0].astype(int))
-					cv2.circle(output, center, 5, (255,0,0), 3)
+					cv2.circle(output, center, 5, (255,0,0), SPEED_STEP)
 					print("Found a stop sign at {} with area {}".format(center, area)) 
 					state = "stopping"
-		#cv2.drawContours(output, contours, -1, (0,255,0), 3)
-		#cv2.imshow("images", cv2.resize(output, (320,240))) 
+		# cv2.drawContours(output, contours, -1, (0,255,0), SPEED_STEP)
+		# cv2.imshow("images", cv2.resize(output, (320,240))) 
 		# Break the esc loop
-		#if cv2.waitKey(1) == ESC_KEY:
-		#	break
+		if cv2.waitKey(1) == ESC_KEY:
+			break
 	elif state == "stopping":
 		if speed > 0:
-			speed -= 10
+			speed -= SPEED_STEP
 			time.sleep(0.1)
 		else:
 			state = "stopped"
 	elif state == "stopped":
-		if speed < 100:
-			speed += 10
-			time.sleep(0.1)
-		else:
-			state = "forward"
+		time.sleep(5)
+		state = "forward"
 	print("moving forward at {} speed".format(speed))
+	SetWheels('B', speed)
 
-#TODO: send speed amounts via serial
+seriaL.close()
